@@ -29,7 +29,7 @@ async function putJSON(url: string, data: unknown) {
   return res.json();
 }
 
-// ── Leads ───────────────────────────────────────────────────────────
+// ── Leads List ──────────────────────────────────────────────────────
 export type ListLeadsBucket = "HOT" | "WARM" | "COLD";
 
 interface ListLeadsParams {
@@ -65,31 +65,32 @@ export function getListLeadsQueryKey() {
   return ["leads"];
 }
 
-// ── Single Lead ─────────────────────────────────────────────────────
-export function useGetLead(params: { path: { id: string } }) {
+// ── Single Lead (lead-detail.tsx calls: useGetLead(leadId, { query: { enabled, queryKey } })) ──
+export function useGetLead(leadId: number, opts?: { query?: { enabled?: boolean; queryKey?: unknown[] } }) {
   return useQuery({
-    queryKey: ["lead", params.path.id],
-    queryFn: () => fetchJSON(`/leads/${params.path.id}`),
-    enabled: !!params.path.id,
+    queryKey: opts?.query?.queryKey || ["lead", leadId],
+    queryFn: () => fetchJSON(`/leads/${leadId}`),
+    enabled: opts?.query?.enabled ?? !!leadId,
   });
 }
 
 export function useRetryLead() {
   return useMutation({
-    mutationFn: ({ path }: { path: { id: string } }) =>
-      postJSON(`/leads/${path.id}/retry`, {}),
+    mutationFn: ({ id }: { id: number }) =>
+      postJSON(`/leads/${id}/retry`, {}),
   });
 }
 
-export function getGetLeadQueryKey() {
-  return ["lead"];
+export function getGetLeadQueryKey(leadId?: number) {
+  return leadId ? ["lead", leadId] : ["lead"];
 }
 
-export function useGetCall(params: { path: { id: string } }) {
+// ── Single Call (lead-detail.tsx calls: useGetCall(callId, { query: { enabled, queryKey } })) ──
+export function useGetCall(callId: number, opts?: { query?: { enabled?: boolean; queryKey?: unknown[] } }) {
   return useQuery({
-    queryKey: ["call", params.path.id],
-    queryFn: () => fetchJSON(`/leads/${params.path.id}/call`),
-    enabled: !!params.path.id,
+    queryKey: opts?.query?.queryKey || ["call", callId],
+    queryFn: () => fetchJSON(`/leads/0/calls/${callId}`),
+    enabled: opts?.query?.enabled ?? !!callId,
   });
 }
 
